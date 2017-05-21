@@ -1,0 +1,116 @@
+---
+title: "testimomials"
+author: "Sumit Kant"
+date: "21 May 2017"
+output: html_document
+---
+
+## Load data
+
+Extracting only the student IDs
+```{r warning=FALSE}
+testimonials <- read.csv("testimonials.csv")
+ids <- testimonials[,c(1,4)]
+head(ids)
+```
+
+## Subsetting Data
+
+At IIM Lucknow, there are primarily two programs, Post Graduate Diploma in Management (PGDM) and Agri-Business Management (ABM). Since ABM is a small group.We will look into their network, for the sake of simpliity
+
+```{r}
+abm.ids <- ids[grep("abm", ids$PGP.ID),]
+head(abm.ids)
+dim(abm.ids)
+```
+
+```{r}
+unique(abm.ids$PGP.ID)
+```
+
+So there are 20 students in ABM Program. Let's look at their social network.
+
+```{r message=FALSE}
+# Loading libraries
+library(ggplot2)
+library(ggnet)
+library(GGally)
+library(network)
+library(RColorBrewer)
+```
+
+```{r}
+net <- network(abm.ids[,c(2,1)], directed = TRUE)
+
+x = data.frame(frndcrcl = network.vertex.names(net))
+x <- abm.ids$PGP.ID
+net %v% "frndcrcl" = as.character(x)
+```
+
+## Making Color Palette
+
+```{r}
+getPalette = colorRampPalette(brewer.pal(9, "Set1"))
+colors <- getPalette(length(unique(abm.ids$PGP.ID)))
+names(colors) <- unique(abm.ids$PGP.ID)
+```
+
+# Plotting the net
+```{r}
+ggnet2(net, mode = "fruchtermanreingold",
+       alpha = 0.85, 
+       size = 10, 
+       edge.alpha = 0.35,
+       edge.color = "gray50",
+       label = abm.ids$PGP.ID,
+       label.size = 4,
+       color = "frndcrcl",
+       palette = colors,
+       arrow.type = "closed", arrow.size = 8, arrow.gap = 0.02, legend.position = "none")
+```
+
+# Let's look at PGP group
+
+```{r}
+pgp.ids <- ids[grep("pgp", ids$PGP.ID),]
+head(pgp.ids)
+dim(pgp.ids)
+```
+
+```{r}
+length(unique(pgp.ids$PGP.ID))
+```
+
+So there are a lot of students in PGP programme as you see.
+
+```{r}
+net.pgp <- network(pgp.ids[,c(2,1)], directed = TRUE)
+
+y = data.frame(frndcrcl = network.vertex.names(net.pgp))
+y <- pgp.ids$PGP.ID
+net.pgp %v% "frndcrcl" = as.character(y)
+```
+
+## Making Color Palette
+
+```{r}
+getPalette = colorRampPalette(brewer.pal(9, "Set1"))
+colors.pgp <- getPalette(length(unique(pgp.ids$PGP.ID)))
+names(colors.pgp) <- unique(pgp.ids$PGP.ID)
+head(colors.pgp)
+```
+
+# Plotting the net
+```{r}
+ggnet2(net.pgp, mode = "fruchtermanreingold",
+       alpha = 0.85, 
+       size = 6, 
+       edge.alpha = 0.35,
+       edge.color = "gray50",
+       label = pgp.ids$PGP.ID,
+       label.size = 3,
+       color = "frndcrcl",
+       palette = colors.pgp,
+       arrow.type = "closed", arrow.size = 6, arrow.gap = 0.02, legend.position = "none")
+```
+
